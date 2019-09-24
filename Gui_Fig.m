@@ -26,7 +26,7 @@ handles.output = hObject;
     handles.hListener = ...
         addlistener(handles.slider,'ContinuousValueChange',@slider_Callback);
  end
- 
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -34,6 +34,7 @@ function varargout = Gui_Fig_OutputFcn(hObject, eventdata, handles)
 
 varargout{1} = handles.output;
 
+% ************************ BROWSER ****************************************
 function browser_Callback(hObject, eventdata, handles)
 
 [ video_file_name,video_file_path ] = uigetfile({'*.tif'},'Pick a video file');      %;*.png;*.yuv;*.bmp;*.tif'},'Pick a file');
@@ -78,7 +79,7 @@ imshow(frame_1);
 drawnow;
 % Display Frame Number
 set(handles.text1,'String','1');
-set(handles.text2,'String',['  /  ',num2str(NumberImages)]);
+set(handles.text2,'String',[' / ',num2str(NumberImages)]);
 set(handles.text1,'Visible','on');
 set(handles.text2,'Visible','on');
 set(handles.start,'Enable','on');
@@ -90,12 +91,9 @@ set(handles.slider, 'Value', 1);
 set(handles.slider, 'Min', 1);
 set(handles.slider, 'Max', NumberImages);
 set(handles.slider, 'SliderStep', [1/(NumberImages-1) , 1/(NumberImages-1) ]);
+
 % save the current/last slider value
 handles.lastSliderVal = get(handles.slider,'Value');
-
-% set(handles.slider,'Min',0);                %maybe change to 0
-% set(handles.slider,'Max',NumberImages)
-% set(handles.slider, 'SliderStep',  [1, 1] / NumberImages);
 guidata(hObject,handles);
 
 function address_line_Callback(hObject, eventdata, handles)
@@ -112,28 +110,27 @@ function text1_CreateFcn(hObject, eventdata, handles)
 
 % ************************ START ******************************************
 function start_Callback(hObject, eventdata, handles)
+% Reset handels
 set(handles.slider, 'Value', 1);
-moveX = handles.moveX;
 set(handles.play_pause ,'String', 'Pause');
 set(handles.play_pause,'Enable','on');
 set(handles.start,'Enable','on');
-axes(handles.video_axes);
-axes(handles.behaviour_axes);
-hold on;
-vert = plot(handles.behaviour_axes,[0 0],[0 170]);
-while handles.slider.Value ~= size(handles.FinalImage,4) - 1
+moveX = handles.moveX;
+
+while handles.slider.Value <= size(handles.FinalImage,4) - 1
     % Display frames
     handles.slider.Value = handles.slider.Value + 1;
     i = handles.slider.Value;
     set(handles.text1,'String',num2str(i));
-    axes(handles.video_axes);  %maybe change to setter
+    axes(handles.video_axes);                                            %maybe change to setter
     imshow(handles.FinalImage(:,:,:,i));
     drawnow;
-    axes(handles.behaviour_axes); %maybe change to setter
+    
+    axes(handles.behaviour_axes);                                        %maybe change to setter
     axis([moveX(i) moveX(i + 200) 0 170]);
     xlim([moveX(i) + (moveX(i)- moveX(i + 200)) moveX(i + 200)]);
     hold on;
-    set(vert,'XData',[moveX(i) moveX(i)],'YData',[0 170]);
+    set(handles.vert,'XData',[moveX(i) moveX(i)],'YData',[0 170]);
     drawnow;
     
 end
@@ -147,23 +144,21 @@ function play_pause_Callback(hObject, eventdata, handles)
 
 if(strcmp(get(handles.play_pause,'String'),'Pause'))
     set(handles.play_pause,'String','Play')
-%     set(handles.slider,'Enable','on');
     uiwait();
 else
     set(handles.play_pause ,'String', 'Pause');
-%     set(handles.slider,'Enable','off');
     uiresume();
 end    
     
 function play_pause_CreateFcn(hObject, eventdata, handles)
 
 
-% ************************ EXIT ******************************************
+% ************************ EXIT *******************************************
 
 function exit_Callback(hObject, eventdata, handles)
 delete(handles.figure1);
 
-% *********************** BEHAVIOUR **************************************
+% *********************** BEHAVIOUR ***************************************
 
 function load_trail_Callback(hObject, eventdata, handles)
 
@@ -196,9 +191,12 @@ p(4).MarkerSize = 15;
 p(4).LineWidth = 2;
 xlim([-handles.moveX(200) handles.moveX(200)]);
 ylim([0 170]);
+hold on 
+handles.vert = plot(handles.behaviour_axes,[0 0],[0 170]);
+handles.vert.Tag = 'Vert';
 guidata(hObject,handles);
 
-% *********************** SLIDER **************************************
+% *********************** SLIDER ******************************************
 
 function slider_Callback (hObject, eventdata, handles)
 handles = guidata(hObject);
