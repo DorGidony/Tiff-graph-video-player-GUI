@@ -194,6 +194,9 @@ ylim([0 170]);
 hold on 
 handles.vert = plot(handles.behaviour_axes,[0 0],[0 170]);
 handles.vert.Tag = 'Vert';
+
+set(handles.figure1,'toolbar','figure');
+set(handles.figure1,'menubar','figure');
 guidata(hObject,handles);
 
 % *********************** SLIDER ******************************************
@@ -222,3 +225,12 @@ function slider_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
+
+
+% --- Executes during object creation, after setting all properties.
+function behaviour_axes_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to behaviour_axes (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: place code in OpeningFcn to populate behaviour_axes
