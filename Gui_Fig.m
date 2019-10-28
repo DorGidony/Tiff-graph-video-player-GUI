@@ -116,21 +116,22 @@ set(handles.play_pause ,'String', 'Pause');
 set(handles.play_pause,'Enable','on');
 set(handles.start,'Enable','on');
 moveX = handles.moveX;
+offSet = str2double(get(handles.offSet,'String'));
 
 while handles.slider.Value <= size(handles.FinalImage,4) - 1
     % Display frames
     handles.slider.Value = handles.slider.Value + 1;
     i = handles.slider.Value;
     set(handles.text1,'String',num2str(i));
-    axes(handles.video_axes);                                            %maybe change to setter
+    axes(handles.video_axes);                                            
     imshow(handles.FinalImage(:,:,:,i));
     drawnow;
     
-    axes(handles.behaviour_axes);                                        %maybe change to setter
-    axis([moveX(i) moveX(i + 200) 0 170]);
-    xlim([moveX(i) + (moveX(i)- moveX(i + 200)) moveX(i + 200)]);
+    axes(handles.behaviour_axes);                                        
+    axis([moveX(i) + moveX(offSet) moveX(i + 200) + moveX(offSet) 0 170]);
+    xlim([moveX(i) + (moveX(i)- moveX(i + 200) + moveX(offSet)) moveX(i + 200) + moveX(offSet)]);
     hold on;
-    set(handles.vert,'XData',[moveX(i) moveX(i)],'YData',[0 170]);
+    set(handles.vert,'XData',[moveX(i) + moveX(offSet) moveX(i) + moveX(offSet)],'YData',[0 170]);
     drawnow;
     
 end
@@ -159,15 +160,19 @@ function exit_Callback(hObject, eventdata, handles)
 delete(handles.figure1);
 
 % *********************** BEHAVIOUR ***************************************
+function behaviour_axes_CreateFcn(hObject, eventdata, handles)
 
 function load_trail_Callback(hObject, eventdata, handles)
 
+% open trail fig file
 [ trail_file_name,trail_file_path ] = uigetfile({'*.fig'},'Pick a trail file');      
 if(trail_file_path == 0)
     return;   
 end
 
 fig = openfig([trail_file_path, trail_file_name]);
+
+% extracting trail fig data
 axObjs = fig.Children;
 dataObjs = axObjs.Children;
 handles.moveX = dataObjs(5).XData;
@@ -180,6 +185,7 @@ handles.rewardX = dataObjs(2).XData;
 handles.rewardY = dataObjs(2).YData;
 axes(handles.behaviour_axes);
 
+% plotting
 p = plot(handles.moveX,handles.moveY,'ob', handles.stopX,handles.stopY,'or',...
     handles.rewardX,handles.rewardY,'xk', handles.irX,  handles.irY,'^k');
 
@@ -189,16 +195,31 @@ p(3).MarkerSize = 15;
 p(3).LineWidth = 2;
 p(4).MarkerSize = 15;
 p(4).LineWidth = 2;
-xlim([-handles.moveX(200) handles.moveX(200)]);
+
+% alignment of trail fig with the video 
+offSet = str2double(get(handles.offSet,'String')) + 1; % the +1 is to avoid 0 value.
+leftBound = -handles.moveX(200) + handles.moveX(offSet); 
+rightBound = handles.moveX(200) + handles.moveX(offSet);
+
+xlim([leftBound rightBound]);
 ylim([0 170]);
 hold on 
-handles.vert = plot(handles.behaviour_axes,[0 0],[0 170]);
+
+% alignment of the vert line
+handles.vert = plot(handles.behaviour_axes,[handles.moveX(offSet) handles.moveX(offSet)],[0 170]);
 handles.vert.Tag = 'Vert';
 
 set(handles.figure1,'toolbar','figure');
 set(handles.figure1,'menubar','figure');
 guidata(hObject,handles);
 
+function offSet_Callback(hObject, eventdata, handles)
+
+function offSet_CreateFcn(hObject, eventdata, handles)
+
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
 % *********************** SLIDER ******************************************
 
 function slider_Callback (hObject, eventdata, handles)
@@ -225,12 +246,3 @@ function slider_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
-
-
-% --- Executes during object creation, after setting all properties.
-function behaviour_axes_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to behaviour_axes (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: place code in OpeningFcn to populate behaviour_axes
